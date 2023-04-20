@@ -34,8 +34,10 @@ app.post("/cadastro", async (req, res) => {
     const { nome, email, senha } = req.body
 
     const validation = usuarioSchema.validate(req.body, { abortEarly: false })
-    const errors = validation.error.details.map(i => i.message)
-    if (!validation.error) return res.status(422).send(errors)
+    if (validation.error) {
+        const errors = validation.error.details.map(i => i.message)
+        return res.status(422).send(errors)
+    }
 
     const hash = bcrypt.hashSync(senha, 10)
 
@@ -51,17 +53,17 @@ app.post("/login", async (req, res) => {
 
     const validation = loginSchema.validate(req.body, { abortEarly: false })
     const errors = validation.error.details.map(i => i.message)
-    if (!validation.error) return res.status(422).send(errors)
+    if (validation.error) return res.status(422).send(errors)
 
     const usuario = await db.collection("users").findOne({ email })
     if (!usuario) return res.sendStatus(404)
 
     const senhaCorreta = bcrypt.compareSync(senha, usuario.senha)
     if (!senhaCorreta) return res.sendStatus(401)
-    
-    const token=uuid()
+
+    const token = uuid()
     await db.collection("sessoes").insertOne({ token, idUsuario: usuario._id })
-    
+
     res.status(200).send(token)
 })
 
