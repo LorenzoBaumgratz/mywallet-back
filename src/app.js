@@ -19,6 +19,51 @@ try {
 }
 export const db = mongoClient.db()
 
+const usuarioSchema = joi.object({
+    nome: joi.string().required(),
+    email: joi.string().email().required(),
+    senha: joi.string().required().min(3)
+})
+
+const loginSchema = joi.object({
+    email: joi.string().email().required(),
+    senha: joi.string().required().min(3)
+})
+
+app.post("/cadastro", async (req, res) => {
+    const { nome, email, senha } = req.body
+
+    const validation = usuarioSchema.validate(req.body, { abortEarly: false })
+    const errors = validation.error.details.map(i => i.message)
+    if (!validation.error) return res.status(422).send(errors)
+
+    const hash = bcrypt.hashSync(senha, 10)
+
+    const usuario = await db.collection("users").findOne({ email })
+    if (usuario) return res.sendStatus(409)
+
+    await db.collection("users").insertOne({ nome, email, senha: hash })
+    res.sendStatus(201)
+})
+
+app.post("/login", async (req, res) => {
+    const { email, senha } = req.body
+
+    const validation = loginSchema.validate(req.body, { abortEarly: false })
+    const errors = validation.error.details.map(i => i.message)
+    if (!validation.error) return res.status(422).send(errors)
+
+    const usuario = await db.collection("users").findOne({ email })
+    if (!usuario) return res.sendStatus(404)
+
+    const senhaCorreta = bcrypt.compareSync(senha, usuario.senha)
+    if (!senhaCorreta) return res.sendStatus(401)
+    
+    const token=uuid()
+    await db.collection("sessoes").insertOne({ token, idUsuario: usuario._id })
+    
+    res.status(200).send(token)
+})
 
 const port = process.env.PORT || 5000
 app.listen(port, () => {
