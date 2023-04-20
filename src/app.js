@@ -52,8 +52,10 @@ app.post("/login", async (req, res) => {
     const { email, senha } = req.body
 
     const validation = loginSchema.validate(req.body, { abortEarly: false })
-    const errors = validation.error.details.map(i => i.message)
-    if (validation.error) return res.status(422).send(errors)
+    if (validation.error) {
+        const errors = validation.error.details.map(i => i.message)
+        return res.status(422).send(errors)
+    }
 
     const usuario = await db.collection("users").findOne({ email })
     if (!usuario) return res.sendStatus(404)
