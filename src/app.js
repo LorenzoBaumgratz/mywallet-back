@@ -30,6 +30,11 @@ const loginSchema = joi.object({
     senha: joi.string().required().min(3)
 })
 
+const transacaoSchema = joi.object({
+    tipo: joi.string().required(),
+    valor: joi.number().precision(2).required()
+})
+
 app.post("/cadastro", async (req, res) => {
     const { nome, email, senha } = req.body
 
@@ -67,6 +72,47 @@ app.post("/login", async (req, res) => {
     await db.collection("sessoes").insertOne({ token, idUsuario: usuario._id })
 
     res.status(200).send(token)
+})
+
+app.post("/transacao", async (req, res) => {
+    const { autorization } = req.headers
+    const { tipo, valor } = req.body
+
+    const token = autorization?.replace('Bearer', '')
+    if (!token) res.sendStatus(401)
+
+    const validation = transacaoSchema.validate(req.body, { abortEarly: false })
+    if (validation.error) {
+        const errors = validation.error.details.map(i => i.message)
+        return res.status(422).send(errors)
+    }
+
+    const sessao = await db.collection("sessoes").findOne({ token })
+    if (!sessao) return res.sendStatus(401)
+
+    const usuario = await db.collection("users").findOne({ _id: sessao.idUsuario })
+    if (!usuario) return res.sendStatus(401)
+
+    await db.collection("transacoes").insertOne({ tipo, valor: valor * 100, idUsuario: usuario._id }) //salva em centavos
+    res.sendStatus(201)
+})
+
+app.get("/transacoes", async (req, res) => {
+    const { autorization } = req.headers
+
+    const token = autorization?.replace('Bearer', '')
+    if (!token) res.sendStatus(401)
+
+    const sessao = await db.collection("sessoes").findOne({ token })
+    if (!sessao) return res.sendStatus(401)
+
+    // const usuario=await db.collection("users").findOne({_id: sessao.idUsuario})
+    // if(!usuario) return res.sendStatus(401)
+
+    const transacoes = await db.collection("transacoes").find({ idUsuario: sessao.idUsuario }).toArray()
+    res.status(200).send(transacoes);
+
+    res.sendStatus(201)
 })
 
 const port = process.env.PORT || 5000
