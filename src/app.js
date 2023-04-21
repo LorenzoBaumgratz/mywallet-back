@@ -80,7 +80,7 @@ app.post("/transacao", async (req, res) => {
     const { authorization } = req.headers
     const { tipo, valor } = req.body
 
-    const token = autorization?.replace('Bearer', '')
+    const token = authorization?.replace('Bearer', '')
     if (!token) res.sendStatus(401)
 
     const validation = transacaoSchema.validate(req.body, { abortEarly: false })
