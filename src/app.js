@@ -71,11 +71,13 @@ app.post("/login", async (req, res) => {
     const token = uuid()
     await db.collection("sessoes").insertOne({ token, idUsuario: usuario._id })
 
+    delete usuario.senha
+
     res.status(200).send(token)
 })
 
 app.post("/transacao", async (req, res) => {
-    const { autorization } = req.headers
+    const { authorization } = req.headers
     const { tipo, valor } = req.body
 
     const token = autorization?.replace('Bearer', '')
@@ -98,9 +100,9 @@ app.post("/transacao", async (req, res) => {
 })
 
 app.get("/transacoes", async (req, res) => {
-    const { autorization } = req.headers
+    const { authorization } = req.headers
 
-    const token = autorization?.replace('Bearer', '')
+    const token = authorization?.replace('Bearer', '')
     if (!token) res.sendStatus(401)
 
     const sessao = await db.collection("sessoes").findOne({ token })
