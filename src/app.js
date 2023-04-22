@@ -73,7 +73,7 @@ app.post("/login", async (req, res) => {
 
     delete usuario.senha
 
-    res.status(200).send(token)
+    res.status(200).send(usuario.nome,token)
 })
 
 app.post("/transacao", async (req, res) => {
