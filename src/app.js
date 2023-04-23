@@ -113,7 +113,7 @@ app.get("/transacoes", async (req, res) => {
     // const usuario=await db.collection("users").findOne({_id: sessao.idUsuario})
     // if(!usuario) return res.sendStatus(401)
 
-    const transacoes = await db.collection("transacoes").find({ idUsuario: sessao.idUsuario }).toArray().reverse()
+    const transacoes = await db.collection("transacoes").find({ idUsuario: sessao.idUsuario }).reverse().toArray()
     res.status(200).send(transacoes);
 
     res.sendStatus(201)
