@@ -49,7 +49,7 @@ app.post("/cadastro", async (req, res) => {
     const hash = bcrypt.hashSync(senha, 10)
 
     const usuario = await db.collection("users").findOne({ email })
-    if (usuario) return res.sendStatus(409)
+    if (usuario) return res.status(409).send("Usuario já existente")
 
     await db.collection("users").insertOne({ nome, email, senha: hash })
     res.sendStatus(201)
@@ -65,10 +65,10 @@ app.post("/login", async (req, res) => {
     }
 
     const usuario = await db.collection("users").findOne({ email })
-    if (!usuario) return res.sendStatus(404)
+    if (!usuario) return res.status(404).send("email e/ou senha incorretos")
 
     const senhaCorreta = bcrypt.compareSync(senha, usuario.senha)
-    if (!senhaCorreta) return res.sendStatus(401)
+    if (!senhaCorreta) return res.status(401).send("email e/ou senha incorretos")
 
     const token = uuid()
     await db.collection("sessoes").insertOne({ token, idUsuario: usuario._id })
