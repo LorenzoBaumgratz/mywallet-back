@@ -113,10 +113,9 @@ app.get("/transacoes", async (req, res) => {
     // const usuario=await db.collection("users").findOne({_id: sessao.idUsuario})
     // if(!usuario) return res.sendStatus(401)
 
-    const transacoes = await db.collection("transacoes").find({ idUsuario: sessao.idUsuario }).reverse().toArray()
+    const transacoes = await db.collection("transacoes").find({ idUsuario: sessao.idUsuario }).toArray()
     res.status(200).send(transacoes);
 
-    res.sendStatus(201)
 })
 
 const port = process.env.PORT || 5000
