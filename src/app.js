@@ -5,6 +5,7 @@ import dotenv from "dotenv"
 import joi from "joi"
 import bcrypt from "bcrypt"
 import { v4 as uuid } from "uuid"
+import dayjs from "dayjs";
 
 const app = express(); //app do servidor
 app.use(cors());
@@ -32,7 +33,8 @@ const loginSchema = joi.object({
 
 const transacaoSchema = joi.object({
     tipo: joi.string().required(),
-    valor: joi.number().precision(2).required()
+    valor: joi.number().precision(2).required(),
+    descricao:joi.string().required()
 })
 
 app.post("/cadastro", async (req, res) => {
@@ -78,7 +80,7 @@ app.post("/login", async (req, res) => {
 
 app.post("/transacao", async (req, res) => {
     const { authorization } = req.headers
-    const { tipo, valor } = req.body
+    const { tipo, valor,descricao } = req.body
 
     const token = authorization?.replace('Bearer ', '')
     if (!token) res.sendStatus(401)
@@ -95,7 +97,7 @@ app.post("/transacao", async (req, res) => {
     const usuario = await db.collection("users").findOne({ _id: sessao.idUsuario })
     if (!usuario) return res.sendStatus(401)
 
-    await db.collection("transacoes").insertOne({ tipo, valor: valor * 100, idUsuario: usuario._id }) //salva em centavos
+    await db.collection("transacoes").insertOne({ tipo, valor: valor * 100,descricao,data:dayjs().format("DD/MM") ,idUsuario: usuario._id }) //salva em centavos
     res.sendStatus(201)
 })
 
