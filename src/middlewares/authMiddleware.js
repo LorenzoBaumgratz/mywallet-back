@@ -6,9 +6,14 @@ export async function authValidation(req,res,next){
     const token = authorization?.replace('Bearer ', '')
     if (!token) res.sendStatus(401)
     
-    const sessao = await db.collection("sessoes").findOne({ token })
-    if (!sessao) return res.sendStatus(401)
-
-    res.locals.sessao=sessao
+    try{
+        const sessao = await db.collection("sessoes").findOne({ token })
+        if (!sessao) return res.sendStatus(401)
+    
+        res.locals.sessao=sessao
+    }catch(err){
+        return res.status(500).send(err.message)
+    }
+    
     next()
 }
