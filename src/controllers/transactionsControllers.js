@@ -5,6 +5,9 @@ export async function postTransacao(req, res) {
     const { tipo, valor,descricao } = req.body
     const { authorization } = req.headers
 
+    const sessao=res.locals.sessao
+
+
     const usuario = await db.collection("users").findOne({ _id: sessao.idUsuario })
     if (!usuario) return res.sendStatus(401)
 
