@@ -18,6 +18,8 @@ export async function getTransacoes(req, res) {
     // const usuario=await db.collection("users").findOne({_id: sessao.idUsuario})
     // if(!usuario) return res.sendStatus(401)
 
+    const sessao=res.locals.sessao
+
     const transacoes = await db.collection("transacoes").find({ idUsuario: sessao.idUsuario }).toArray()
     res.status(200).send(transacoes);
 
